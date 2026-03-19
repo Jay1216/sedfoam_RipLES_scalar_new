@@ -193,6 +193,61 @@ int main(int argc, char *argv[])
                          << max(turbulenceb->nut()).value() << endl;
                 }
             }
+
+	    // added begin
+            const scalar RRval = RR.value();
+            const scalar AAval = AA.value();
+            const scalar nnVal = nn.value();
+            const scalar mmVal = mm.value();
+            const scalar AlpVal = Alp.value();
+            const scalar SigmaMval = SigmaM.value();
+            const scalar SUSSval = SUSS.value();
+            const scalar nubVal = nub.value();
+
+            if (scalarTransport)
+            {
+               Info<< "\nCalculating scalar transport\n" << endl;
+
+               const volScalarField& nutb = turbulenceb->nut()();
+               surfaceScalarField betaf = fvc::interpolate(beta);  // beta: volScalarField; phib: surface flux
+
+               while (pimple.correctNonOrthogonal())
+               {
+
+                   forAll(R,i)
+                   {
+                      if (alpha[i] >= 0.57)
+                      {
+                         R[i] = RRval;
+                         using std::pow;
+                         Tort2[i] = pow(scalar(AAval * pow(beta[i], scalar(1.0) - mmVal)), nnVal);
+                         DT[i] = AlpVal*mag(Ub[i]) + nubVal/(SigmaMval*Tort2[i]);
+                      }
+                      else
+                      {
+                         R[i] = scalar(0.0);
+                        // DT[i] = nutb[i]/SUSSval + nubVal/SigmaMval;
+                        DT[i] = nutb[i]*SUS[i] + nubVal/SigmaMval;
+                      }
+                   }
+                   // Passive scalar transport equation solver
+                   fvScalarMatrix TEqn
+                   (
+                       fvm::ddt(beta,T)
+                     + fvm::div(betaf*phib, T)
+                     - fvm::laplacian(beta*DT, T)
+                     - beta*R
+                    ==
+                       fvOptions(T)
+                   );
+
+                   TEqn.relax();
+                   fvOptions.constrain(TEqn);
+                   TEqn.solve();
+                   fvOptions.correct(T);
+               }
+            }
+            // added end	    
         }
         if (debugInfo)
         {

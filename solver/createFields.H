@@ -173,6 +173,92 @@ dimensionedScalar nuMaxExp
         1e0
     )
 );
+
+// added begin
+dimensionedScalar RR
+(
+    dimensionedScalar::getOrDefault
+    (
+        "RR",
+        transportProperties,
+        dimensionSet(0, 0, -1, 0, 0, 0, 0),
+        0
+    )
+);
+
+dimensionedScalar AA
+(
+    dimensionedScalar::getOrDefault
+    (
+        "AA",
+        transportProperties,
+        dimensionSet(0, 0, 0, 0, 0, 0, 0),
+        1
+    )
+);
+
+dimensionedScalar nn
+(
+    dimensionedScalar::getOrDefault
+    (
+        "nn",
+        transportProperties,
+        dimensionSet(0, 0, -1, 0, 0, 0, 0),
+        1
+    )
+);
+
+dimensionedScalar mm
+(
+    dimensionedScalar::getOrDefault
+    (
+        "mm",
+        transportProperties,
+        dimensionSet(0, 0, -1, 0, 0, 0, 0),
+        2.14
+    )
+);
+
+dimensionedScalar Alp
+(
+    dimensionedScalar::getOrDefault
+    (
+        "Alp",
+        transportProperties,
+        dimensionSet(0, 1, 0, 0, 0, 0, 0),
+        1e-3
+    )
+);
+
+dimensionedScalar SigmaM
+(
+    dimensionedScalar::getOrDefault
+    (
+        "SigmaM",
+        transportProperties,
+        dimensionSet(0, 0, 0, 0, 0, 0, 0),
+        500
+    )
+);
+
+dimensionedScalar SUSS
+(
+    dimensionedScalar::getOrDefault
+    (
+        "SUSS",
+        transportProperties,
+        dimensionSet(0, 0, 0, 0, 0, 0, 0),
+        1
+    )
+);
+
+// switch scalar transport
+Switch scalarTransport
+(
+     transportProperties.getOrDefault<Switch>("scalarTransport", false)
+);
+// added end
+
 // Initialize phase a and b variables
 
 autoPtr<phaseModel> phasea = phaseModel::New
@@ -559,6 +645,68 @@ volScalarField pa
     mesh,
     dimensionedScalar("zero", dimensionSet(1, -1, -2, 0, 0), 0.0)
 );
+
+// added begin
+Info<< "Reading field T\n" << endl;
+volScalarField T
+(
+    IOobject
+    (
+        "T",
+        runTime.timeName(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::AUTO_WRITE
+    ),
+    mesh
+);
+
+volScalarField DT
+(
+    IOobject
+    (
+        "DT",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::NO_WRITE
+    ),
+    mesh,
+    //dimensionedScalar("zero", dimless, 0.0) 
+    dimensionedScalar("zero", dimensionSet(0, 2, -1, 0, 0, 0, 0), 0.0)
+);
+
+volScalarField R
+(
+    IOobject
+    (
+        "R",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::NO_WRITE
+    ),
+    mesh,
+    //dimensionedScalar("zero", dimless, 0.0)
+    dimensionedScalar("zero", dimensionSet(0, 0, -1, 0, 0, 0, 0), 0.0)
+);
+
+volScalarField Tort2
+(
+    IOobject
+    (
+        "Tort2",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::NO_WRITE
+    ),
+    mesh,
+    dimensionedScalar("zero", dimless, 0.0)
+);
+
+// added end
+
 
 volTensorField gradUaT
 (
